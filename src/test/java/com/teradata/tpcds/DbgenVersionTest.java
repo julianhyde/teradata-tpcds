@@ -29,7 +29,7 @@ public class DbgenVersionTest
     public void testSingleRowCorrectlyGenerated()
     {
         Results outputRows = constructResults(DBGEN_VERSION, 1, 1, TEST_SESSION);
-        String row = formatRow(outputRows.iterator().next().get(0), TEST_SESSION);
+        String row = formatRow(outputRows.iterator().next().get(0).getValues(), TEST_SESSION);
 
         assertTrue(row.startsWith("2.0.0|"));
         assertTrue(row.endsWith("|--table dbgen_version|\n"));

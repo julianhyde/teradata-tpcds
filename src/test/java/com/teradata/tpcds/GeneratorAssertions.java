@@ -16,6 +16,7 @@ package com.teradata.tpcds;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
+import com.teradata.tpcds.row.TableRow;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,8 +42,8 @@ public final class GeneratorAssertions
     {
         try {
             DigestOutputStream out = md5OutputStream(ByteStreams.nullOutputStream());
-            for (List<List<String>> parentAndChildRows : results) {
-                out.write(formatRow(parentAndChildRows.get(0), session).getBytes(ISO_8859_1));
+            for (List<TableRow> parentAndChildRows : results) {
+                out.write(formatRow(parentAndChildRows.get(0).getValues(), session).getBytes(ISO_8859_1));
             }
             byte[] md5Digest = out.getMessageDigest().digest();
             assertEquals(base16().lowerCase().encode(md5Digest), expectedMD5);

@@ -23,14 +23,13 @@ import com.teradata.tpcds.row.generator.RowGeneratorResult;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.teradata.tpcds.Parallel.splitWork;
 import static java.util.Objects.requireNonNull;
 
 public class Results
-        implements Iterable<List<List<String>>>
+        implements Iterable<List<TableRow>>
 {
     private final Table table;
     private final long startingRowNumber;
@@ -57,16 +56,15 @@ public class Results
     }
 
     @Override
-    public Iterator<List<List<String>>> iterator()
+    public Iterator<List<TableRow>> iterator()
     {
         return new ResultsIterator(table, startingRowNumber, rowCount, session);
     }
 
     private static class ResultsIterator
-            extends AbstractIterator<List<List<String>>>
+            extends AbstractIterator<List<TableRow>>
     {
         private final long endingRowNumber;
-        private final Table table;
         private final Session session;
         private long rowNumber;
         private final RowGenerator rowGenerator;
@@ -80,7 +78,6 @@ public class Results
             checkArgument(startingRowNumber >= 1, "starting row number is less than 1: %s", startingRowNumber);
             checkArgument(endingRowNumber <= session.getScaling().getRowCount(table), "starting row number is greater than the total rows in %s: %s", table, endingRowNumber);
 
-            this.table = table;
             this.rowNumber = startingRowNumber;
             this.endingRowNumber = endingRowNumber;
             this.session = session;
@@ -107,14 +104,14 @@ public class Results
         }
 
         @Override
-        protected List<List<String>> computeNext()
+        protected List<TableRow> computeNext()
         {
             if (rowNumber > endingRowNumber) {
                 return endOfData();
             }
 
             RowGeneratorResult result = rowGenerator.generateRowAndChildRows(rowNumber, session, parentRowGenerator, childRowGenerator);
-            List<List<String>> tableRows = result.getRowAndChildRows().stream().map(TableRow::getValues).collect(Collectors.toList());
+            List<TableRow> tableRows = result.getRowAndChildRows();
 
             if (result.shouldEndRow()) {
                 rowStop();

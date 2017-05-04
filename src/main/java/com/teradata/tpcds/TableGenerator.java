@@ -14,6 +14,8 @@
 
 package com.teradata.tpcds;
 
+import com.teradata.tpcds.row.TableRow;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,13 +48,13 @@ public class TableGenerator
         try (OutputStreamWriter parentWriter = addFileWriterForTable(table);
                 OutputStreamWriter childWriter = table.hasChild() && !session.generateOnlyOneTable() ? addFileWriterForTable(table.getChild()) : null) {
             Results results = constructResults(table, session);
-            for (List<List<String>> parentAndChildRows : results) {
+            for (List<TableRow> parentAndChildRows : results) {
                 if (parentAndChildRows.size() > 0) {
-                    writeResults(parentWriter, parentAndChildRows.get(0));
+                    writeResults(parentWriter, parentAndChildRows.get(0).getValues());
                 }
                 if (parentAndChildRows.size() > 1) {
                     requireNonNull(childWriter, "childWriter is null, but a child row was produced");
-                    writeResults(childWriter, parentAndChildRows.get(1));
+                    writeResults(childWriter, parentAndChildRows.get(1).getValues());
                 }
             }
         }

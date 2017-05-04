@@ -15,6 +15,7 @@
 package com.teradata.tpcds.row;
 
 import com.teradata.tpcds.generator.GeneratorColumn;
+import com.teradata.tpcds.type.Date;
 
 import static com.teradata.tpcds.type.Date.fromJulianDays;
 
@@ -36,17 +37,32 @@ public abstract class TableRowWithNulls
         return (nullBitMap & kBitMask) != 0;
     }
 
+    protected <T> T getValueOrNull(T value, GeneratorColumn column)
+    {
+        return isNull(column) ? null : value;
+    }
+
+    protected long getLongOrNullForKey(long value, GeneratorColumn column)
+    {
+        return (isNull(column) || value == -1) ? null : value;
+    }
+
+    protected Date getDateOrNullFromJulianDays(long value, GeneratorColumn column)
+    {
+        return (isNull(column) || value < 0) ? null : fromJulianDays((int) value);
+    }
+
     protected <T> String getStringOrNull(T value, GeneratorColumn column)
     {
         return isNull(column) ? null : value.toString();
     }
 
-    protected <T> String getStringOrNullForKey(long value, GeneratorColumn column)
+    protected String getStringOrNullForKey(long value, GeneratorColumn column)
     {
         return (isNull(column) || value == -1) ? null : Long.toString(value);
     }
 
-    protected <T> String getStringOrNullForBoolean(boolean value, GeneratorColumn column)
+    protected String getStringOrNullForBoolean(boolean value, GeneratorColumn column)
     {
         if (isNull(column)) {
             return null;
@@ -55,7 +71,7 @@ public abstract class TableRowWithNulls
         return value ? "Y" : "N";
     }
 
-    protected <T> String getDateStringOrNullFromJulianDays(long value, GeneratorColumn column)
+    protected String getDateStringOrNullFromJulianDays(long value, GeneratorColumn column)
     {
         return (isNull(column) || value < 0) ? null : fromJulianDays((int) value).toString();
     }

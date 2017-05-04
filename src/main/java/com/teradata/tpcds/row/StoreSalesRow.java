@@ -14,6 +14,8 @@
 
 package com.teradata.tpcds.row;
 
+import com.teradata.tpcds.column.StoreSalesColumn;
+import com.teradata.tpcds.type.Decimal;
 import com.teradata.tpcds.type.Pricing;
 
 import java.util.List;
@@ -84,11 +86,126 @@ public class StoreSalesRow
         this.ssPricing = ssPricing;
     }
 
+    public long getSsSoldDateSk()
+    {
+        return getLongOrNullForKey(ssSoldDateSk, SS_SOLD_DATE_SK);
+    }
+
+    public long getSsSoldTimeSk()
+    {
+        return getLongOrNullForKey(ssSoldTimeSk, SS_SOLD_TIME_SK);
+    }
+
+    public long getSsItemSk()
+    {
+        return getLongOrNullForKey(ssSoldItemSk, SS_SOLD_ITEM_SK);
+    }
+
+    public long getSsCustomerSk()
+    {
+        return getLongOrNullForKey(ssSoldCustomerSk, SS_SOLD_CUSTOMER_SK);
+    }
+
+    public long getSsCdemoSk()
+    {
+        return getLongOrNullForKey(ssSoldCdemoSk, SS_SOLD_CDEMO_SK);
+    }
+
+    public long getSsHdemoSk()
+    {
+        return getLongOrNullForKey(ssSoldHdemoSk, SS_SOLD_HDEMO_SK);
+    }
+
+    public long getSsAddrSk()
+    {
+        return getLongOrNullForKey(ssSoldAddrSk, SS_SOLD_ADDR_SK);
+    }
+
+    public long getSsStoreSk()
+    {
+        return getLongOrNullForKey(ssSoldStoreSk, SS_SOLD_STORE_SK);
+    }
+
+    public long getSsPromoSk()
+    {
+        return getLongOrNullForKey(ssSoldPromoSk, SS_SOLD_PROMO_SK);
+    }
+
+    public long getSsTicketNumber()
+    {
+        return getLongOrNullForKey(ssTicketNumber, SS_TICKET_NUMBER);
+    }
+
+    public int getSsQuantity()
+    {
+        return getValueOrNull(ssPricing.getQuantity(), SS_PRICING_QUANTITY);
+    }
+
+    public Decimal getSsWholesaleCost()
+    {
+        return getValueOrNull(ssPricing.getWholesaleCost(), SS_PRICING_WHOLESALE_COST);
+    }
+
+    public Decimal getSsListPrice()
+    {
+        return getValueOrNull(ssPricing.getListPrice(), SS_PRICING_LIST_PRICE);
+    }
+
+    public Decimal getSsSalesPrice()
+    {
+        return getValueOrNull(ssPricing.getSalesPrice(), SS_PRICING_SALES_PRICE);
+    }
+
+    public Decimal getSsExtDiscountAmount()
+    {
+        return getValueOrNull(ssPricing.getCouponAmount(), SS_PRICING_COUPON_AMT);
+    }
+
+    public Decimal getSsExtSalesPrice()
+    {
+        return getValueOrNull(ssPricing.getExtSalesPrice(), SS_PRICING_EXT_SALES_PRICE);
+    }
+
+    public Decimal getSsExtWholesaleCost()
+    {
+        return getValueOrNull(ssPricing.getExtWholesaleCost(), SS_PRICING_EXT_WHOLESALE_COST);
+    }
+
+    public Decimal getSsExtListPrice()
+    {
+        return getValueOrNull(ssPricing.getExtListPrice(), SS_PRICING_EXT_LIST_PRICE);
+    }
+
+    public Decimal getSsExtTax()
+    {
+        return getValueOrNull(ssPricing.getExtTax(), SS_PRICING_EXT_TAX);
+    }
+
+    public Decimal getSsCouponAmount()
+    {
+        return getValueOrNull(ssPricing.getCouponAmount(), SS_PRICING_COUPON_AMT);
+    }
+
+    public Decimal getSsNetPaid()
+    {
+        return getValueOrNull(ssPricing.getNetPaid(), SS_PRICING_NET_PAID);
+    }
+
+    public Decimal getSsNetPaidIncludingTax()
+    {
+        return getValueOrNull(ssPricing.getNetPaidIncludingTax(), SS_PRICING_NET_PAID_INC_TAX);
+    }
+
+    public Decimal getSsNetProfit()
+    {
+        return getValueOrNull(ssPricing.getNetProfit(), SS_PRICING_NET_PROFIT);
+    }
+
     @Override
     public List<String> getValues()
     {
         return newArrayList(getStringOrNullForKey(ssSoldDateSk, SS_SOLD_DATE_SK),
-                getStringOrNullForKey(ssSoldTimeSk, SS_SOLD_TIME_SK),
+                getStringOrNullForKey(StoreSalesColumn.SS_SOLD_DATE_SK.get, SS_SOLD_TIME_SK),
                 getStringOrNullForKey(ssSoldItemSk, SS_SOLD_ITEM_SK),
                 getStringOrNullForKey(ssSoldCustomerSk, SS_SOLD_CUSTOMER_SK),
                 getStringOrNullForKey(ssSoldCdemoSk, SS_SOLD_CDEMO_SK),
@@ -112,27 +229,27 @@ public class StoreSalesRow
                 getStringOrNull(ssPricing.getNetProfit(), SS_PRICING_NET_PROFIT));
     }
 
-    public long getSsTicketNumber()
+    public long getRawSsTicketNumber()
     {
         return ssTicketNumber;
     }
 
-    public long getSsSoldItemSk()
+    public long getRawSsSoldItemSk()
     {
         return ssSoldItemSk;
     }
 
-    public long getSsSoldCustomerSk()
+    public long getRawSsSoldCustomerSk()
     {
         return ssSoldCustomerSk;
     }
 
-    public long getSsSoldDateSk()
+    public long getRawSsSoldDateSk()
     {
         return ssSoldDateSk;
     }
 
-    public Pricing getSsPricing()
+    public Pricing getRawSsPricing()
     {
         return ssPricing;
     }

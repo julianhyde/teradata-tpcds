@@ -77,19 +77,19 @@ public class StoreReturnsRowGenerator
         long nullBitMap = createNullBitMap(STORE_RETURNS, getRandomNumberStream(SR_NULLS));
 
         // some of the information in the return is taken from the original sale
-        long srTicketNumber = salesRow.getSsTicketNumber();
-        long srItemSk = salesRow.getSsSoldItemSk();
+        long srTicketNumber = salesRow.getRawSsTicketNumber();
+        long srItemSk = salesRow.getRawSsSoldItemSk();
 
         // some of the fields are conditionally taken from the sale
         Scaling scaling = session.getScaling();
         long srCustomerSk = generateJoinKey(SR_CUSTOMER_SK, getRandomNumberStream(SR_CUSTOMER_SK), CUSTOMER, 1, scaling);
         int randomInt = generateUniformRandomInt(1, 100, getRandomNumberStream(SR_TICKET_NUMBER));
         if (randomInt < SR_SAME_CUSTOMER) {
-            srCustomerSk = salesRow.getSsSoldCustomerSk();
+            srCustomerSk = salesRow.getRawSsSoldCustomerSk();
         }
 
         // the rest of the columns are generated for this specific return
-        long srReturnedDateSk = generateJoinKey(SR_RETURNED_DATE_SK, getRandomNumberStream(SR_RETURNED_DATE_SK), DATE_DIM, salesRow.getSsSoldDateSk(), scaling);
+        long srReturnedDateSk = generateJoinKey(SR_RETURNED_DATE_SK, getRandomNumberStream(SR_RETURNED_DATE_SK), DATE_DIM, salesRow.getRawSsSoldDateSk(), scaling);
         long srReturnedTimeSk = generateUniformRandomInt(8 * 3600 - 1, 17 * 3600 - 1, getRandomNumberStream(SR_RETURNED_TIME_SK));
         long srCdemoSk = generateJoinKey(SR_CDEMO_SK, getRandomNumberStream(SR_CDEMO_SK), CUSTOMER_DEMOGRAPHICS, 1, scaling);
         long srHdemoSk = generateJoinKey(SR_HDEMO_SK, getRandomNumberStream(SR_HDEMO_SK), HOUSEHOLD_DEMOGRAPHICS, 1, scaling);
@@ -97,7 +97,7 @@ public class StoreReturnsRowGenerator
         long srStoreSk = generateJoinKey(SR_STORE_SK, getRandomNumberStream(SR_STORE_SK), STORE, 1, scaling);
         long srReasonSk = generateJoinKey(SR_REASON_SK, getRandomNumberStream(SR_REASON_SK), REASON, 1, scaling);
 
-        Pricing salesPricing = salesRow.getSsPricing();
+        Pricing salesPricing = salesRow.getRawSsPricing();
         int quantity = generateUniformRandomInt(1, salesPricing.getQuantity(), getRandomNumberStream(SR_PRICING));
         Pricing srPricing = generatePricingForReturnsTable(SR_PRICING, getRandomNumberStream(SR_PRICING), quantity, salesPricing);
 

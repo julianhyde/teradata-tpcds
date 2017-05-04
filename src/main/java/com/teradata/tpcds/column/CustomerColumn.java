@@ -14,6 +14,7 @@
 package com.teradata.tpcds.column;
 
 import com.teradata.tpcds.Table;
+import com.teradata.tpcds.row.CustomerRow;
 
 import static com.teradata.tpcds.Table.CUSTOMER;
 import static com.teradata.tpcds.column.ColumnTypes.IDENTIFIER;
@@ -24,24 +25,132 @@ import static com.teradata.tpcds.column.ColumnTypes.varchar;
 public enum CustomerColumn
         implements Column
 {
-    C_CUSTOMER_SK(IDENTIFIER),
-    C_CUSTOMER_ID(character(16)),
-    C_CURRENT_CDEMO_SK(IDENTIFIER),
-    C_CURRENT_HDEMO_SK(IDENTIFIER),
-    C_CURRENT_ADDR_SK(IDENTIFIER),
-    C_FIRST_SHIPTO_DATE_SK(IDENTIFIER),
-    C_FIRST_SALES_DATE_SK(IDENTIFIER),
-    C_SALUTATION(character(10)),
-    C_FIRST_NAME(character(20)),
-    C_LAST_NAME(character(30)),
-    C_PREFERRED_CUST_FLAG(character(1)),
-    C_BIRTH_DAY(INTEGER),
-    C_BIRTH_MONTH(INTEGER),
-    C_BIRTH_YEAR(INTEGER),
-    C_BIRTH_COUNTRY(varchar(20)),
-    C_LOGIN(character(13)),
-    C_EMAIL_ADDRESS(character(50)),
-    C_LAST_REVIEW_DATE_SK(IDENTIFIER);
+    C_CUSTOMER_SK(IDENTIFIER)
+            {
+                public long getIdentifier(CustomerRow customerRow)
+                {
+                    return customerRow.getcCustomerSk();
+                }
+            },
+    C_CUSTOMER_ID(character(16))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcCustomerId();
+                }
+            },
+    C_CURRENT_CDEMO_SK(IDENTIFIER)
+            {
+                public long getIdentifier(CustomerRow customerRow)
+                {
+                    return customerRow.getcCurrentCdemoSk();
+                }
+            },
+    C_CURRENT_HDEMO_SK(IDENTIFIER)
+            {
+                public long getIdentifier(CustomerRow customerRow)
+                {
+                    return customerRow.getcCurrentHdemoSk();
+                }
+            },
+    C_CURRENT_ADDR_SK(IDENTIFIER)
+            {
+                public long getIdentifier(CustomerRow customerRow)
+                {
+                    return customerRow.getcCurrentAddrSk();
+                }
+            },
+    C_FIRST_SHIPTO_DATE_SK(IDENTIFIER)
+            {
+                public long getIdentifier(CustomerRow customerRow)
+                {
+                    return customerRow.getcFirstShiptoDateId();
+                }
+            },
+    C_FIRST_SALES_DATE_SK(IDENTIFIER)
+            {
+                public long getIdentifier(CustomerRow customerRow)
+                {
+                    return customerRow.getcFirstSalesDateId();
+                }
+            },
+    C_SALUTATION(character(10))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcSalutation();
+                }
+            },
+    C_FIRST_NAME(character(20))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcFirstName();
+                }
+            },
+    C_LAST_NAME(character(30))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcLastName();
+                }
+            },
+    C_PREFERRED_CUST_FLAG(character(1))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcPreferredCustFlag();
+                }
+            },
+    C_BIRTH_DAY(INTEGER)
+            {
+                public int getInteger(CustomerRow customerRow)
+                {
+                    return customerRow.getcBirthDay();
+                }
+            },
+    C_BIRTH_MONTH(INTEGER)
+            {
+                public int getInteger(CustomerRow customerRow)
+                {
+                    return customerRow.getcBirthMonth();
+                }
+            },
+    C_BIRTH_YEAR(INTEGER)
+            {
+                public int getInteger(CustomerRow customerRow)
+                {
+                    return customerRow.getcBirthYear();
+                }
+            },
+    C_BIRTH_COUNTRY(varchar(20))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcBirthCountry();
+                }
+            },
+    C_LOGIN(character(13))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcLogin();
+                }
+            },
+    C_EMAIL_ADDRESS(character(50))
+            {
+                public String getString(CustomerRow customerRow)
+                {
+                    return customerRow.getcEmailAddress();
+                }
+            },
+    C_LAST_REVIEW_DATE_SK(IDENTIFIER)
+            {
+                public long getIdentifier(CustomerRow customerRow)
+                {
+                    return customerRow.getcLastReviewDate();
+                }
+            };
 
     private final ColumnType type;
 

@@ -97,6 +97,96 @@ public class CustomerRow
         this.cLastReviewDate = cLastReviewDate;
     }
 
+    public long getcCustomerSk()
+    {
+        return getLongOrNullForKey(cCustomerSk, C_CUSTOMER_SK);
+    }
+
+    public String getcCustomerId()
+    {
+        return getValueOrNull(cCustomerId, C_CUSTOMER_ID);
+    }
+
+    public long getcCurrentCdemoSk()
+    {
+        return getLongOrNullForKey(cCurrentCdemoSk, C_CURRENT_CDEMO_SK);
+    }
+
+    public long getcCurrentHdemoSk()
+    {
+        return getLongOrNullForKey(cCurrentHdemoSk, C_CURRENT_HDEMO_SK);
+    }
+
+    public long getcCurrentAddrSk()
+    {
+        return getLongOrNullForKey(cCurrentAddrSk, C_CURRENT_ADDR_SK);
+    }
+
+    public int getcFirstShiptoDateId()
+    {
+        return getValueOrNull(cFirstShiptoDateId, C_FIRST_SHIPTO_DATE_ID);
+    }
+
+    public int getcFirstSalesDateId()
+    {
+        return getValueOrNull(cFirstSalesDateId, C_FIRST_SALES_DATE_ID);
+    }
+
+    public String getcSalutation()
+    {
+        return getValueOrNull(cSalutation, C_SALUTATION);
+    }
+
+    public String getcFirstName()
+    {
+        return getValueOrNull(cFirstName, C_FIRST_NAME);
+    }
+
+    public String getcLastName()
+    {
+        return getValueOrNull(cLastName, C_LAST_NAME);
+    }
+
+    public String getcPreferredCustFlag()
+    {
+        return getStringOrNullForBoolean(cPreferredCustFlag, C_PREFERRED_CUST_FLAG);
+    }
+
+    public int getcBirthDay()
+    {
+        return getValueOrNull(cBirthDay, C_BIRTH_DAY);
+    }
+
+    public int getcBirthMonth()
+    {
+        return getValueOrNull(cBirthMonth, C_BIRTH_MONTH);
+    }
+
+    public int getcBirthYear()
+    {
+        return getValueOrNull(cBirthYear, C_BIRTH_YEAR);
+    }
+
+    public String getcBirthCountry()
+    {
+        return getValueOrNull(cBirthCountry, C_BIRTH_COUNTRY);
+    }
+
+    public String getcLogin()
+    {
+        return cLogin;
+    }
+
+    public String getcEmailAddress()
+    {
+        return getValueOrNull(cEmailAddress, C_EMAIL_ADDRESS);
+    }
+
+    public int getcLastReviewDate()
+    {
+        return getValueOrNull(cLastReviewDate, C_LAST_REVIEW_DATE);
+    }
+
     @Override
     public List<String> getValues()
     {
