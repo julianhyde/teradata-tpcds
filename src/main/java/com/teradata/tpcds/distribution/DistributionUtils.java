@@ -39,6 +39,46 @@ public final class DistributionUtils
 {
     private DistributionUtils() {}
 
+    /** Looks up a distribution by name.
+     *
+     * @param name Name of distribution
+     *
+     * @return Distribution, never null
+     *
+     * @throws IllegalArgumentException if not found
+     */
+    public static Distribution distribution(String name)
+    {
+        switch (name) {
+        case "fips_county":
+            return FipsCountyDistribution.FIPS_COUNTY_DISTRIBUTION;
+        case "i_manager_id":
+            return ItemsDistributions.ITEM_MANAGER_ID_DISTRIBUTION;
+        case "cities":
+            return AddressDistributions.CITIES_DISTRIBUTION;
+        case "categories":
+            return CategoriesDistribution.CATEGORIES_DISTRIBUTION;
+        case "gender":
+            return DemographicsDistributions.GENDER_DISTRIBUTION;
+        case "marital_status":
+            return DemographicsDistributions.MARITAL_STATUS_DISTRIBUTION;
+        case "education":
+            return DemographicsDistributions.EDUCATION_DISTRIBUTION;
+        case "colors":
+            return ItemsDistributions.COLORS_DISTRIBUTION;
+        case "units":
+            return ItemsDistributions.UNITS_DISTRIBUTION;
+        case "sizes":
+            return ItemsDistributions.SIZES_DISTRIBUTION;
+        case "ship_mode_carrier":
+            return ShipModeDistributions.SHIP_MODE_CARRIER_DISTRIBUTION;
+        case "stores":
+            return ShipModeDistributions.SHIP_MODE_CARRIER_DISTRIBUTION;
+        default:
+            throw new IllegalArgumentException("unknown distribution " + name);
+        }
+    }
+
     protected static final class WeightsBuilder
     {
         ImmutableList.Builder<Integer> weightsBuilder = ImmutableList.builder();

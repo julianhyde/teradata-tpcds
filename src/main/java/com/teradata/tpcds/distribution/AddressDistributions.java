@@ -14,6 +14,7 @@
 
 package com.teradata.tpcds.distribution;
 
+import com.google.common.collect.ImmutableList;
 import com.teradata.tpcds.random.RandomNumberStream;
 
 import static com.teradata.tpcds.distribution.AddressDistributions.StreetNamesWeights.DEFAULT;
@@ -23,7 +24,8 @@ public final class AddressDistributions
 {
     private static final StringValuesDistribution STREET_NAMES_DISTRIBUTION = buildStringValuesDistribution("street_names.dst", 1, 2);
     private static final StringValuesDistribution STREET_TYPES_DISTRIBUTION = buildStringValuesDistribution("street_types.dst", 1, 1);
-    private static final StringValuesDistribution CITIES_DISTRIBUTION = buildStringValuesDistribution("cities.dst", 1, 6);
+    static final StringValuesDistribution CITIES_DISTRIBUTION = buildStringValuesDistribution("cities.dst", 1,
+            ImmutableList.of("usgs", "uniform", "large", "medium", "small", "6"));
     private static final StringValuesDistribution COUNTRIES_DISTRIBUTION = buildStringValuesDistribution("countries.dst", 1, 1);
 
     private AddressDistributions() {}

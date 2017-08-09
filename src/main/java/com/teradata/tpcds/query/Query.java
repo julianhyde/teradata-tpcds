@@ -117,7 +117,7 @@ public enum Query {
                     (Substitutions.ListSubstitution) arg.getValue();
                 for (int i = 0; i < listSubstitution.count; i++) {
                     result.put(arg.getKey() + "." + (i + 1),
-                        listSubstitution.substitution);
+                        Substitutions.item(arg.getKey(), i));
                 }
             }
         }

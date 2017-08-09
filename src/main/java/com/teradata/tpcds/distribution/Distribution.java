@@ -12,27 +12,20 @@
  * limitations under the License.
  */
 
-package com.teradata.tpcds.query;
+package com.teradata.tpcds.distribution;
 
-import org.testng.annotations.Test;
-
+import java.util.List;
 import java.util.Random;
 
-import static org.testng.Assert.assertNotNull;
-
-/**
- * Unit tests for {@link Query}.
- */
-public class QueryTest
+/** Statistical distribution, capable of generating values of a random
+ * variable.
+ *
+ * @see DistributionUtils */
+public interface Distribution
 {
-    @Test
-    public void testGenerateAll()
-    {
-        for (Query query : Query.values()) {
-            final String sql = query.sql(new Random(0));
-            System.out.println(query.id + ": " + sql);
-            assertNotNull(sql);
-            assert !sql.contains("[");
-        }
-    }
+    Object cell(int field, int row);
+
+    Object random(int field, int weight, Random random);
+
+    List<String> getWeightNames();
 }

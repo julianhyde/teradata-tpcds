@@ -20,25 +20,28 @@ import com.teradata.tpcds.random.RandomNumberStream;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.teradata.tpcds.distribution.DistributionUtils.getDistributionIterator;
 import static com.teradata.tpcds.distribution.DistributionUtils.getListFromCommaSeparatedValues;
 import static java.lang.Integer.parseInt;
 
-public class CategoriesDistribution
+public class CategoriesDistribution implements Distribution
 {
     private static final int NUM_WEIGHT_FIELDS = 1;
     private static final String VALUES_AND_WEIGHTS_FILENAME = "categories.dst";
-    private static final CategoriesDistribution CATEGORIES_DISTRIBUTION = buildCategoriesDistribution();
+    static final CategoriesDistribution CATEGORIES_DISTRIBUTION = buildCategoriesDistribution();
 
     private final ImmutableList<String> names;
+    private final ImmutableList<String> classes;
     private final ImmutableList<Integer> hasSizes;
     private final ImmutableList<Integer> weights;
 
-    private CategoriesDistribution(ImmutableList<String> names, ImmutableList<Integer> hasSizes, ImmutableList<Integer> weights)
+    private CategoriesDistribution(ImmutableList<String> names, ImmutableList<String> classes, ImmutableList<Integer> hasSizes, ImmutableList<Integer> weights)
     {
         this.names = names;
+        this.classes = classes;
         this.hasSizes = hasSizes;
         this.weights = weights;
     }
@@ -46,6 +49,7 @@ public class CategoriesDistribution
     private static CategoriesDistribution buildCategoriesDistribution()
     {
         ImmutableList.Builder<String> namesBuilder = ImmutableList.builder();
+        ImmutableList.Builder<String> classesBuilder = ImmutableList.builder();
         ImmutableList.Builder<Integer> hasSizesBuilder = ImmutableList.builder();
         WeightsBuilder weightsBuilder = new WeightsBuilder();
 
@@ -58,7 +62,7 @@ public class CategoriesDistribution
             checkState(values.size() == 3, "Expected line to contain 3 values, but it contained %d, %s", values.size(), values);
 
             namesBuilder.add(values.get(0));
-            // we don't add the class distribution names because they are unused
+            classesBuilder.add(values.get(1));
             hasSizesBuilder.add(parseInt(values.get(2)));
 
             List<String> weights = getListFromCommaSeparatedValues(fields.get(1));
@@ -67,6 +71,7 @@ public class CategoriesDistribution
         }
 
         return new CategoriesDistribution(namesBuilder.build(),
+                classesBuilder.build(),
                 hasSizesBuilder.build(),
                 weightsBuilder.build());
     }
@@ -84,5 +89,36 @@ public class CategoriesDistribution
     public static int getHasSizeAtIndex(int index)
     {
         return CATEGORIES_DISTRIBUTION.hasSizes.get(index);
+    }
+
+    private List list(int field)
+    {
+        switch (field) {
+        case 0:
+            return names;
+        case 1:
+            return classes;
+        case 2:
+            return hasSizes;
+        default:
+            throw new IllegalArgumentException("unknown field " + field
+                    + " in distribution " + this);
+        }
+    }
+
+    public Object cell(int field, int row)
+    {
+        return list(field).get(row);
+    }
+
+    public Object random(int field, int weight, Random random)
+    {
+        List list = list(field);
+        return list.get(random.nextInt(list.size()));
+    }
+
+    public List<String> getWeightNames()
+    {
+        return ImmutableList.of("uniform");
     }
 }

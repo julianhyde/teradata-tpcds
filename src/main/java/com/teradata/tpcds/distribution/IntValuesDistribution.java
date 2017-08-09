@@ -28,15 +28,11 @@ import static com.teradata.tpcds.distribution.DistributionUtils.getDistributionI
 import static com.teradata.tpcds.distribution.DistributionUtils.getListFromCommaSeparatedValues;
 import static java.lang.Integer.parseInt;
 
-public class IntValuesDistribution
+public class IntValuesDistribution extends DistributionBase<Integer>
 {
-    private final ImmutableList<ImmutableList<Integer>> valuesLists;
-    private final ImmutableList<ImmutableList<Integer>> weightsLists;
-
     public IntValuesDistribution(ImmutableList<ImmutableList<Integer>> valuesLists, ImmutableList<ImmutableList<Integer>> weightsLists)
     {
-        this.valuesLists = valuesLists;
-        this.weightsLists = weightsLists;
+        super(valuesLists, weightsLists);
     }
 
     public static IntValuesDistribution buildIntValuesDistribution(String valuesAndWeightsFilename, int numValueFields, int numWeightFields)
@@ -99,10 +95,5 @@ public class IntValuesDistribution
     {
         checkArgument(weightListIndex < weightsLists.size(), "index out of range, max weight index is " + (weightsLists.size() - 1));
         return DistributionUtils.pickRandomIndex(weightsLists.get(weightListIndex), stream);
-    }
-
-    public int getSize()
-    {
-        return valuesLists.get(0).size();
     }
 }

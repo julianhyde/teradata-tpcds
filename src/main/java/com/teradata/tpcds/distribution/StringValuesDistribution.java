@@ -27,18 +27,27 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.teradata.tpcds.distribution.DistributionUtils.getDistributionIterator;
 import static com.teradata.tpcds.distribution.DistributionUtils.getListFromCommaSeparatedValues;
 
-public class StringValuesDistribution
+public class StringValuesDistribution extends DistributionBase<String>
 {
-    private final ImmutableList<ImmutableList<String>> valuesLists;
-    private final ImmutableList<ImmutableList<Integer>> weightsLists;
-
     public StringValuesDistribution(ImmutableList<ImmutableList<String>> valuesLists, ImmutableList<ImmutableList<Integer>> weightsLists)
     {
-        this.valuesLists = valuesLists;
-        this.weightsLists = weightsLists;
+        super(valuesLists, weightsLists, generateWeightNames(weightsLists.size()));
+    }
+
+    public StringValuesDistribution(ImmutableList<ImmutableList<String>> valuesLists,
+            ImmutableList<ImmutableList<Integer>> weightsLists,
+            List<String> weightNames)
+    {
+        super(valuesLists, weightsLists, weightNames);
     }
 
     public static StringValuesDistribution buildStringValuesDistribution(String valuesAndWeightsFilename, int numValueFields, int numWeightFields)
+    {
+        return buildStringValuesDistribution(valuesAndWeightsFilename,
+                numValueFields, DistributionBase.generateWeightNames(numWeightFields));
+    }
+
+    public static StringValuesDistribution buildStringValuesDistribution(String valuesAndWeightsFilename, int numValueFields, List<String> weightFieldNames)
     {
         Iterator<List<String>> iterator = getDistributionIterator(valuesAndWeightsFilename);
 
@@ -47,6 +56,7 @@ public class StringValuesDistribution
             valuesBuilders.add(ImmutableList.<String>builder());
         }
 
+        final int numWeightFields = weightFieldNames.size();
         List<WeightsBuilder> weightsBuilders = new ArrayList<>(numWeightFields);
         for (int i = 0; i < numWeightFields; i++) {
             weightsBuilders.add(new WeightsBuilder());
@@ -80,7 +90,7 @@ public class StringValuesDistribution
             weightsListBuilder.add(weightsBuilder.build());
         }
         ImmutableList<ImmutableList<Integer>> weightsLists = weightsListBuilder.build();
-        return new StringValuesDistribution(valuesLists, weightsLists);
+        return new StringValuesDistribution(valuesLists, weightsLists, weightFieldNames);
     }
 
     public String pickRandomValue(int valueListIndex, int weightListIndex, RandomNumberStream stream)
@@ -108,13 +118,8 @@ public class StringValuesDistribution
         return DistributionUtils.getWeightForIndex(index, weightsLists.get(weightListIndex));
     }
 
-    public int getSize()
-    {
-        return valuesLists.get(0).size();
-    }
-
     public String getValueAtIndex(int valueListIndex, int valueIndex)
     {
-        return valuesLists.get(valueListIndex).get(valueIndex);
+        return list(valueListIndex).get(valueIndex);
     }
 }

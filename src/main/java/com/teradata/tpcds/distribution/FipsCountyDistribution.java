@@ -26,9 +26,9 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.teradata.tpcds.distribution.DistributionUtils.getDistributionIterator;
 import static com.teradata.tpcds.distribution.DistributionUtils.getListFromCommaSeparatedValues;
 
-public class FipsCountyDistribution
+public class FipsCountyDistribution extends DistributionBase<Object>
 {
-    private static final FipsCountyDistribution FIPS_COUNTY_DISTRIBUTION = buildFipsCountyDistribution();
+    static final FipsCountyDistribution FIPS_COUNTY_DISTRIBUTION = buildFipsCountyDistribution();
     private static final String VALUES_AND_WEIGHTS_FILENAME = "fips.dst";
     private static final int NUM_WEIGHT_FIELDS = 6;
 
@@ -36,7 +36,6 @@ public class FipsCountyDistribution
     private final ImmutableList<String> stateAbbreviations;
     private final ImmutableList<Integer> zipPrefixes;
     private final ImmutableList<Integer> gmtOffsets;
-    private final ImmutableList<ImmutableList<Integer>> weightsLists;
 
     public FipsCountyDistribution(ImmutableList<String> counties,
             ImmutableList<String> stateAbbreviations,
@@ -44,11 +43,15 @@ public class FipsCountyDistribution
             ImmutableList<Integer> gmtOffsets,
             ImmutableList<ImmutableList<Integer>> weightsLists)
     {
+        //noinspection unchecked
+        super(ImmutableList.<List<Object>>of(ImmutableList.of(), (List) counties,
+                (List) stateAbbreviations, ImmutableList.of(), (List) zipPrefixes,
+                (List) gmtOffsets),
+                weightsLists);
         this.counties = counties;
         this.stateAbbreviations = stateAbbreviations;
         this.zipPrefixes = zipPrefixes;
         this.gmtOffsets = gmtOffsets;
-        this.weightsLists = weightsLists;
     }
 
     public static FipsCountyDistribution buildFipsCountyDistribution()

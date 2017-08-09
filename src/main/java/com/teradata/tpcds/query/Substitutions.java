@@ -16,12 +16,17 @@ package com.teradata.tpcds.query;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.teradata.tpcds.distribution.FipsCountyDistribution;
+import com.teradata.tpcds.distribution.Distribution;
+import com.teradata.tpcds.distribution.DistributionUtils;
 
-import java.util.AbstractList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Function;
 
 /** Utilities for {@link Substitution}. */
@@ -121,12 +126,6 @@ class Substitutions
     static Substitution parse(String s)
     {
         final String original = s;
-        if (s.equals("distmember(i_manager_id, [MGR_IDX], 2)")) {
-            s = "20";
-        }
-        if (s.equals("distmember(i_manager_id, [MGR_IDX], 3)")) {
-            s = "30";
-        }
         if (s.startsWith("text(")) {
             List<String> args = parseArgs(s, "text(", ")");
             if (args.size() == 1) {
@@ -145,6 +144,10 @@ class Substitutions
             }
             return text(builder.build());
         }
+        if (s.startsWith("\"")
+                && s.endsWith("\"")) {
+            return fixed(s.substring(1, s.length() - 1));
+        }
         if (s.startsWith("ulist(")) {
             // Example:
             //  ulist(random(10000,99999,uniform),400)
@@ -153,21 +156,17 @@ class Substitutions
             final Substitution substitution = parse(args.get(0));
             return list(count, substitution);
         }
-        if (s.startsWith("dist(")) {
-            // Example:
-            //  dist(gender, 1, 1)
-            List<String> args = parseArgs(s, "dist(", ")");
-            return fixed(s); // TODO:
-        }
-        if (s.startsWith("DIST(")) {
-            List<String> args = parseArgs(s, "DIST(", ")");
-            return fixed(s); // TODO:
-        }
         if (s.startsWith("date(")) {
             // Example:
             //  date([YEAR]+"-08-01",[YEAR]+"-08-30",sales)
             List<String> args = parseArgs(s, "date(", ")");
-            return fixed(s); // TODO:
+            final String min = args.get(0);
+            final String max = args.get(1);
+            final DateDistribution distribution =
+                    DateDistribution.valueOf(args.get(2).toUpperCase());
+            final Substitution minSub = parse(min);
+            final Substitution maxSub = parse(max);
+            return date(minSub, maxSub, distribution);
         }
         if (s.startsWith("rowcount(")) {
             final int divide;
@@ -194,12 +193,44 @@ class Substitutions
         if (s.startsWith("distmember(")) {
             // Example:
             //  distmember(fips_county, [COUNTY], 3)
+            //  distmember(i_manager_id, [MGR_IDX], 2)
             List<String> args = parseArgs(s, "distmember(", ")");
-            final String distribution = args.get(0); // e.g. "fips_county"
+            final Distribution distribution =
+                    DistributionUtils.distribution(args.get(0)); // e.g. "fips_county"
             final String ref = args.get(1);
             final Substitution refSubstitution = parse(ref);
             final int field = Integer.parseInt(args.get(2));
             return distributionMember(refSubstitution, distribution, field);
+        }
+        if (s.startsWith("DIST(")) {
+            s = "dist" + s.substring("DIST".length());
+        }
+        if (s.startsWith("dist(")) {
+            // Example:
+            //  dist(gender, 1, 1)
+            List<String> args = parseArgs(s, "dist(", ")");
+            String distributionName = args.get(0); // e.g. "fips_county"
+            if (distributionName.equals("distmember(categories,[CINDX],2)")) {
+                // One of the queries has
+                // "dist(distmember(categories,[CINDX],2),1,1)"
+                // I honestly have no idea what that means.
+                distributionName = "categories";
+            }
+            final Distribution distribution =
+                    DistributionUtils.distribution(distributionName);
+            final int field = Integer.parseInt(args.get(1));
+            final String weightName = args.get(2);
+            int weight = distribution.getWeightNames().indexOf(weightName);
+            if (weight < 0) {
+                try {
+                    weight = Integer.parseInt(weightName);
+                }
+                catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("unknown weight "
+                            + weightName);
+                }
+            }
+            return distribution(distribution, field, weight);
         }
         if (s.startsWith("random(")) {
             List<String> parts = parseArgs(s, "random(", ")");
@@ -210,8 +241,18 @@ class Substitutions
             return uniform(start, end);
         }
         if (s.startsWith("[")
-            && s.endsWith("]")) {
-            return ref(s.substring(1, s.length() - 1));
+            && s.contains("]")) {
+            int close = s.indexOf("]");
+            final Substitution sub = ref(s.substring(1, close));
+            s = s.substring(close + 1);
+            if (s.equals("")) {
+                return sub;
+            }
+            if (s.startsWith("+")) {
+                final Substitution next = parse(s.substring(1));
+                return concatenate(sub, next);
+            }
+            throw new IllegalArgumentException("unknown pattern: " + s);
         }
         try {
             int i = Integer.valueOf(s);
@@ -221,6 +262,47 @@ class Substitutions
             throw new AssertionError("unknown substitution: " + s + " (original="
                     + original + ")");
         }
+    }
+
+    private static Substitution distribution(Distribution distribution,
+            int field, int weight)
+    {
+        return generator ->
+                toString(distribution.random(field, weight, generator.random));
+    }
+
+    private static Substitution concatenate(Substitution s0, Substitution s1)
+    {
+        return generator -> s0.generate(generator) + s1.generate(generator);
+    }
+
+    private static Substitution date(Substitution min, Substitution max,
+            DateDistribution distribution)
+    {
+        return generator -> {
+            final Date minDate = toDate(min.generate(generator));
+            final Date maxDate = toDate(max.generate(generator));
+            final long minTime = minDate.getTime();
+            final long maxTime = maxDate.getTime();
+            final long time = minTime
+                + generator.random.nextLong() % (maxTime - minTime);
+            return toString(new Date(time));
+        };
+    }
+
+    private static Date toDate(String s)
+    {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(s);
+        }
+        catch (ParseException e) {
+            throw new RuntimeException("bad date: " + s);
+        }
+    }
+
+    private static String toString(Date s)
+    {
+        return new SimpleDateFormat("yyyy-MM-dd").format(s);
     }
 
     private static Substitution divide(int divide, Substitution substitution)
@@ -233,58 +315,54 @@ class Substitutions
     }
 
     private static Substitution distributionMember(
-        Substitution substitution, String distribution, int field)
+            Substitution substitution, Distribution distribution, int field)
     {
         return generator -> {
-            final int index;
-            switch (distribution) {
-            case "categories":
-                switch (field) {
-                case 1:
-                    index = Integer.parseInt(substitution.generate(generator));
-                    return FipsCountyDistribution.getCountyAtIndex(index);
-                default:
-                    throw new IllegalArgumentException("unknown field " + field
-                            + " of distribution " + distribution);
-                }
-            case "cities":
-                switch (field) {
-                case 1:
-                    index = Integer.parseInt(substitution.generate(generator));
-                    return FipsCountyDistribution.getCountyAtIndex(index);
-                default:
-                    throw new IllegalArgumentException("unknown field " + field
-                            + " of distribution " + distribution);
-                }
-            case "fips_county":
-                switch (field) {
-                case 2:
-                    index = Integer.parseInt(substitution.generate(generator));
-                    return FipsCountyDistribution.getCountyAtIndex(index);
-                case 3:
-                    index = Integer.parseInt(substitution.generate(generator));
-                    return FipsCountyDistribution.getStateAbbreviationAtIndex(index);
-                case 6:
-                    index = Integer.parseInt(substitution.generate(generator));
-                    return Integer.toString(FipsCountyDistribution.getGmtOffsetAtIndex(index));
-                default:
-                    throw new IllegalArgumentException("unknown field " + field
-                            + " of distribution " + distribution);
-                }
-            default:
-                throw new IllegalArgumentException("unknown distribution " + distribution);
-            }
+            final int index = Integer.parseInt(substitution.generate(generator));
+            return toString(distribution.cell(field, index));
         };
+    }
+
+    private static String toString(Object o)
+    {
+        return o instanceof Date
+                ? toString((Date) o)
+                : o.toString();
     }
 
     private static Substitution ref(String ref)
     {
         return generator -> {
+            final Object value = generator.substitutionValues.get(ref);
+            if (value != null) {
+                return toString(value);
+            }
             final Substitution substitution = generator.substitutions.get(ref);
             if (substitution == null) {
                 throw new IllegalArgumentException("Unknown substitution: " + ref);
             }
-            return substitution.generate(generator);
+            final String value2 = substitution.generate(generator);
+            generator.substitutionValues.put(ref, value2);
+            return value2;
+        };
+    }
+
+    public static Substitution item(String ref, int i)
+    {
+        return generator -> {
+            @SuppressWarnings("unchecked") final List<String> list =
+                    (List) generator.substitutionValues.get(ref);
+            if (list != null) {
+                return toString(list.get(i));
+            }
+            final Substitution substitution = generator.substitutions.get(ref);
+            if (substitution == null) {
+                throw new IllegalArgumentException("Unknown substitution: " + ref);
+            }
+            final List<String> value2 =
+                    ((ListSubstitution) substitution).generateList(generator);
+            generator.substitutionValues.put(ref, value2);
+            return toString(value2.get(i));
         };
     }
 
@@ -348,17 +426,32 @@ class Substitutions
 
         public String generate(Generator generator)
         {
-            return new AbstractList<String>() {
-                public String get(int index)
-                {
-                    return substitution.generate(generator);
-                }
-
-                public int size()
-                {
-                    return count;
-                }
-            }.toString();
+            return generateList(generator).toString();
         }
+
+        private List<String> generateList(Generator generator)
+        {
+            final Set<String> strings = new HashSet<>();
+            final int limit = count * 2 + 10000;
+            int attempt = 0;
+            final List<String> list = new ArrayList<>();
+            while (list.size() < count) {
+                final String s = substitution.generate(generator);
+                if (strings.add(s) || attempt++ > limit) {
+                    // After a reasonable number of attempts to produce unique
+                    // entries, settle for non-unique ones.
+                    list.add(s);
+                }
+            }
+            return ImmutableList.copyOf(list);
+        }
+    }
+
+    enum DateDistribution
+    {
+        SALES,
+        RETURNS,
+        EXPONENTIAL,
+        UNIFORM
     }
 }

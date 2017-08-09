@@ -16,7 +16,9 @@ package com.teradata.tpcds.query;
 
 import com.google.common.collect.ImmutableMap;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 /** Context for converting a {@link Query} into text, expanding all of its
@@ -56,12 +58,13 @@ class Generator
 
     final Random random;
     final ImmutableMap<String, Substitution> substitutions;
+    final Map<String, Object> substitutionValues = new HashMap<>();
 
     /**
      * Creates a generator.
      *
      * @param random Random-number generator
-     * @param substitutions Subsitutions, by name
+     * @param substitutions Substitutions, by name
      */
     Generator(Random random, ImmutableMap<String, Substitution> substitutions)
     {
