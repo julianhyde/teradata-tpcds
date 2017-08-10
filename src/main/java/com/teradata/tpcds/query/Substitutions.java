@@ -16,6 +16,8 @@ package com.teradata.tpcds.query;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.teradata.tpcds.PseudoTableScalingInfos;
+import com.teradata.tpcds.Table;
 import com.teradata.tpcds.distribution.Distribution;
 import com.teradata.tpcds.distribution.DistributionUtils;
 
@@ -25,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
@@ -40,10 +43,11 @@ class Substitutions
         return generator -> s;
     }
 
-    /** Creates a substitution that returns the number of rows in a relation. */
-    static Substitution rowCount(final String relation)
+    /** Creates a substitution that returns the number of rows in a
+     * distribution. */
+    static Substitution rowCount(final Distribution distribution)
     {
-        return generator -> generator.rowCount(relation);
+        return generator -> Integer.toString(distribution.getSize());
     }
 
     /** Creates a substitution that generates a list. */
@@ -183,8 +187,21 @@ class Substitutions
             // Example:
             //  rowcount("active_counties", "store")
             List<String> args = parseArgs(s, "rowcount(", ")");
-            final String relation = args.get(args.size() - 1);
-            final Substitution substitution = fixed("100");
+            switch (strip(args.get(0))) {
+            case "active_counties":
+                return generator -> Long.toString(PseudoTableScalingInfos.ACTIVE_COUNTIES.getRowCountForScale(generator.scale));
+            case "store_sales":
+                return generator -> Long.toString(Table.STORE_SALES.getScalingInfo().getRowCountForScale(generator.scale));
+            }
+            final String relation = strip(args.get(args.size() - 1));
+            switch (relation.toLowerCase(Locale.ROOT)) {
+            case "store":
+                return generator -> Long.toString(Table.STORE.getScalingInfo().getRowCountForScale(generator.scale));
+            case "warehouse":
+                return generator -> Long.toString(Table.WAREHOUSE.getScalingInfo().getRowCountForScale(generator.scale));
+            }
+            final Distribution d = DistributionUtils.distribution(relation);
+            final Substitution substitution = rowCount(d);
             if (divide > 1) {
                 return divide(divide, substitution);
             }
@@ -210,7 +227,7 @@ class Substitutions
             //  dist(gender, 1, 1)
             List<String> args = parseArgs(s, "dist(", ")");
             String distributionName = args.get(0); // e.g. "fips_county"
-            if (distributionName.equals("distmember(categories,[CINDX],2)")) {
+            if (distributionName.startsWith("distmember(")) {
                 // One of the queries has
                 // "dist(distmember(categories,[CINDX],2),1,1)"
                 // I honestly have no idea what that means.
@@ -264,11 +281,18 @@ class Substitutions
         }
     }
 
+    private static String strip(String s) {
+        if (s.startsWith("\"") && s.endsWith("\"")) {
+            return s.substring(1, s.length() - 1);
+        }
+        return s;
+    }
+
     private static Substitution distribution(Distribution distribution,
             int field, int weight)
     {
         return generator ->
-                toString(distribution.random(field, weight, generator.random));
+                toString(distribution.random(field - 1, weight, generator.random));
     }
 
     private static Substitution concatenate(Substitution s0, Substitution s1)
@@ -319,7 +343,7 @@ class Substitutions
     {
         return generator -> {
             final int index = Integer.parseInt(substitution.generate(generator));
-            return toString(distribution.cell(field, index));
+            return toString(distribution.cell(field - 1, index - 1));
         };
     }
 

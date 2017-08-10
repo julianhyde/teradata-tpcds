@@ -20,7 +20,7 @@ public final class ReturnReasonsDistribution
 {
     private ReturnReasonsDistribution() {}
 
-    private static final StringValuesDistribution RETURN_REASONS_DISTRIBUTION = buildStringValuesDistribution("return_reasons.dst", 1, 6);
+    static final StringValuesDistribution RETURN_REASONS_DISTRIBUTION = buildStringValuesDistribution("return_reasons.dst", 1, 6);
 
     public static String getReturnReasonAtIndex(int index)
     {

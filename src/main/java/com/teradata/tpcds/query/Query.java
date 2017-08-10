@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
@@ -183,7 +184,7 @@ public enum Query {
                     rest = rest.replaceAll("--.*", "");
                     rest = rest.replaceAll("; *$", "");
                     rest = rest.replaceAll("^ *", "");
-                    args.put(name, Substitutions.parse(rest));
+                    args.put(name.toUpperCase(Locale.ROOT), Substitutions.parse(rest));
                 }
                 else {
                     buf.append(line).append("\n");

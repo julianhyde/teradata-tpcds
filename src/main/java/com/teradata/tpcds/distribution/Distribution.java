@@ -23,9 +23,12 @@ import java.util.Random;
  * @see DistributionUtils */
 public interface Distribution
 {
+    /** Returns a given field value of a given row. Both are 0-based. */
     Object cell(int field, int row);
 
     Object random(int field, int weight, Random random);
 
     List<String> getWeightNames();
+
+    int getSize();
 }

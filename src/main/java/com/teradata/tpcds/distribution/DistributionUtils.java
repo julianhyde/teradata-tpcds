@@ -74,6 +74,8 @@ public final class DistributionUtils
             return ShipModeDistributions.SHIP_MODE_CARRIER_DISTRIBUTION;
         case "stores":
             return ShipModeDistributions.SHIP_MODE_CARRIER_DISTRIBUTION;
+        case "return_reasons":
+            return ReturnReasonsDistribution.RETURN_REASONS_DISTRIBUTION;
         default:
             throw new IllegalArgumentException("unknown distribution " + name);
         }

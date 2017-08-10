@@ -59,8 +59,9 @@ class Generator
     final Random random;
     final ImmutableMap<String, Substitution> substitutions;
     final Map<String, Object> substitutionValues = new HashMap<>();
+    final double scale = 1D;
 
-    /**
+  /**
      * Creates a generator.
      *
      * @param random Random-number generator
@@ -70,10 +71,5 @@ class Generator
     {
         this.random = random;
         this.substitutions = substitutions;
-    }
-
-    public String rowCount(String relation)
-    {
-        return TABLE_ROW_COUNTS.get(relation.toUpperCase(Locale.ROOT)) + "";
     }
 }

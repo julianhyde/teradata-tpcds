@@ -121,4 +121,9 @@ public class CategoriesDistribution implements Distribution
     {
         return ImmutableList.of("uniform");
     }
+
+    public int getSize()
+    {
+        return list(0).size();
+    }
 }
